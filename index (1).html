@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{if(localStorage.getItem("was4bi_theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <title>Was4bi - Siswa Stetsa Bisa</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.0.0/index.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho@5.0.0/index.css">
@@ -568,10 +569,28 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--nori); color:var(
 }
 @keyframes badgePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
 .ws-grid{touch-action:none;user-select:none;-webkit-user-select:none}
+
+/* ===== TEMA SIANG/MALAM ===== */
+body{transition:background .3s,color .3s}
+:root[data-theme="light"]{--nori:#FFF8EC;--nori-soft:#F3E3CB;--cream:#3E2723;--cream-dark:#6D4C41;--wasabi:#4E7F3E;--wasabi-dark:#3F6B31;--gold:#8A6500;--shadow:0 8px 24px rgba(93,46,12,.18)}
+:root[data-theme="light"] .nav-item.active,:root[data-theme="light"] .nav-item .badge,:root[data-theme="light"] .topic-btn.active,:root[data-theme="light"] .admin-tab.active,:root[data-theme="light"] .login-box button,:root[data-theme="light"] .raise-hand-btn,:root[data-theme="light"] .hand-btn.lower:hover,:root[data-theme="light"] .btn-danger:hover,:root[data-theme="light"] .logout-btn:hover,:root[data-theme="light"] .mobile-toggle,:root[data-theme="light"] .edit-toggle.active,:root[data-theme="light"] .hand-btn.call,:root[data-theme="light"] .diff-btn.active,:root[data-theme="light"] .hand-count-badge{color:#fff}
+.theme-btn{position:fixed;right:16px;bottom:16px;width:44px;height:44px;border-radius:50%;border:2px solid var(--sushi-red);background:var(--nori-soft);color:var(--gold);font-size:18px;cursor:pointer;z-index:300;box-shadow:var(--shadow);transition:.3s}
+.theme-btn:hover{transform:rotate(20deg) scale(1.08)}
+/* ===== PANEL PEMAIN (BUKA-TUTUP) & PANEL SOAL ===== */
+.panel-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;background:none;border:none;color:var(--cream);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;padding:0}
+.panel-toggle i{transition:transform .25s;color:var(--sushi-red-light)}
+.panel-toggle.open i{transform:rotate(180deg)}
+.panel-body{margin-top:12px;max-height:260px;overflow-y:auto}
+.ws-question{background:linear-gradient(135deg,rgba(192,57,43,.18),rgba(212,160,23,.12));border:1px solid var(--sushi-red);border-radius:12px;padding:16px 18px;margin-bottom:14px;text-align:center}
+.ws-question .q-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--sushi-red-light);font-weight:700}
+.ws-question .q-clue{font-size:26px;font-weight:700;margin:8px 0;color:var(--cream)}
+.ws-question .q-meta{font-size:12px;color:var(--cream-dark);margin-bottom:10px}
+.hand-more{font-size:11px;color:var(--cream-dark);margin-top:8px;text-align:center}
 </style>
 </head>
 <body>
 <div class="sushi-bg"></div>
+<button class="theme-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Ganti mode siang/malam"></button>
 <!-- ===== STUDENT VIEW (QR Scan Result) ===== -->
 <div class="student-view" id="studentView">
   <div class="student-card">
@@ -630,8 +649,7 @@ body { font-family:'Noto Sans JP',sans-serif; background:var(--nori); color:var(
       </div>
       <div class="nav-section">
         <div class="nav-section-title">🎮 Permainan</div>
-        <div class="nav-item" onclick="showPage('gameIndividual')"><i class="fas fa-gamepad"></i> Game Individu</div>
-        <div class="nav-item" onclick="showPage('gameGroup')"><i class="fas fa-users"></i> Game Kelompok</div>
+        <div class="nav-item" onclick="showPage('game')"><i class="fas fa-th"></i> Game Word Search</div>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">⚙️ Admin</div>
@@ -678,7 +696,7 @@ const MATERIALS = {
       { pattern:"[waktu] に [kegiatan] ます", meaning:"Melakukan kegiatan pada waktu tertentu",
         examples:[
           {jp:"ろくじに あさごはんを たべます。",romaji:"rokuji ni asagohan o tabemasu.",id:"Saya makan pagi jam 6."},
-          {jp:"じゅうにに ひるごはんを たべます。",romaji:"juuini ni hirugohan o tabemasu.",id:"Saya makan siang jam 12."},
+          {jp:"じゅうにじに ひるごはんを たべます。",romaji:"juuiniji ni hirugohan o tabemasu.",id:"Saya makan siang jam 12."},
           {jp:"ななじに ばんごはんを たべます。",romaji:"nanaji ni bangohan o tabemasu.",id:"Saya makan malam jam 7."}
         ]},
       { pattern:"よく / ときどき / あまり～ません / ぜんぜん～ません", meaning:"Frekuensi kegiatan (sering / kadang-kadang / jarang / sama sekali tidak)",
@@ -798,7 +816,7 @@ const MATERIALS = {
   },
   shumi: {
     title: "Shumi", jp: "趣味", icon: "🎨", semester: "ganjil",
-    description: "Mempelajari cara menyampaikan hobi menggunakan pola ～しゅみは～ことです dan ～がすきです。",
+    description: "Mempelajari cara menyampaikan hobi menggunakan pola しゅみは～ことです dan ～がすきです。",
     vocab: [
       {jp:"どくしょ",romaji:"dokusho",id:"membaca"},{jp:"おんがく",romaji:"ongaku",id:"musik"},
       {jp:"えいが",romaji:"eiga",id:"film"},{jp:"りょこう",romaji:"ryokou",id:"wisata"},
@@ -928,7 +946,7 @@ let gameQuestions = {
     {q:"「いっしょに りょこうしましょう」のいみは？",options:["Pergi sendiri","Mari pergi bersama","Jangan pergi","Sudah pergi"],answer:1,spice:"medium"},
     {q:"「てんきが よかったです」の「よかった」は bentuk lampau dari?",options:["わるい","よい","おおきい","ちいさい"],answer:1,spice:"hot"},
     {q:"「ふじさんに のぼったことが あります」の「のぼった」のいみは？",options:["Turun","Mendaki","Melihat","Foto"],answer:1,spice:"hot"},
-    {q:"Bentuk lampau い-adjektiva ～い menjadi?",options:["～かったです","～かったです","～でした","～ます"],answer:1,spice:"extra"},
+    {q:"Bentuk lampau い-adjektiva ～い menjadi?",options:["～くです","～かったです","～でした","～ます"],answer:1,spice:"extra"},
     {q:"「りょかん」のいみは？",options:["Hotel barat","Penginapan Jepang","Restoran","Toko"],answer:1,spice:"extra"}
   ],
   kisetsu: [
@@ -982,17 +1000,6 @@ let gameQuestions = {
 };
 try { const sq = JSON.parse(localStorage.getItem('was4bi_questions') || 'null'); if (sq) gameQuestions = sq; } catch(e) {}
 function saveQuestions() { try { localStorage.setItem('was4bi_questions', JSON.stringify(gameQuestions)); } catch(e) {} }
-function exportQuestions() {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(gameQuestions, null, 2)], {type:'application/json'}));
-  a.download = 'soal-was4bi.json'; a.click();
-}
-function importQuestions(inp) {
-  const f = inp.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = () => { try { gameQuestions = JSON.parse(r.result); saveQuestions(); notify('✅ Soal berhasil diimpor'); showAdminTab('questions'); } catch(e) { notify('File JSON tidak valid', true); } };
-  r.readAsText(f);
-}
 // WORD SEARCH DATA
 const WORDSEARCH_DATA = {
   tabemono: {words:["GOHAN","MIZU","NIKU","SAKANA","PAN","CHA","SUSHI","UDON"],title:"Makanan & Minuman"},
@@ -1000,10 +1007,24 @@ const WORDSEARCH_DATA = {
   norimono: {words:["DENSHA","BASU","KURUMA","FUNE","EKI","KIPPU","MICHI","HAYAI"],title:"Transportasi"},
   ryokou: {words:["RYOKOU","ONSEN","TERA","HOTERU","OMIYAGE","TANOSHII","KIREI","SAIKOU"],title:"Perjalanan"},
   kisetsu: {words:["HARU","NATSU","AKI","FUYU","SAKURA","YUKI","AME","KAZE"],title:"Musim"},
-  shumi: {words:["ONGAKU","EIGA","SHASHIN","RYORI","SUPORTSU","DOKUSHO","ANIME","SUPEI"],title:"Hobi"},
+  shumi: {words:["ONGAKU","EIGA","SHASHIN","RYOURI","SUPOOTSU","DOKUSHO","ANIME","RYOKOU"],title:"Hobi"},
   shourai: {words:["YUME","SENSEI","ISHA","DAIGAKU","HATARAKU","NARU","BENKYOU","SHOURAI"],title:"Masa Depan"},
   kenkou: {words:["ATAMA","ONAKA","NODO","NETSU","KAZE","KUSURI","GENKI","ITAI"],title:"Kesehatan"}
 };
+try { const sw = JSON.parse(localStorage.getItem('was4bi_words') || 'null'); if (sw) for (const k in sw) if (WORDSEARCH_DATA[k]) WORDSEARCH_DATA[k].words = sw[k]; } catch(e) {}
+// PETUNJUK SOAL (arti kosakata) - kata tanpa petunjuk memakai petunjuk otomatis
+const WS_CLUES = {
+  GOHAN:"Nasi", MIZU:"Air putih", NIKU:"Daging", SAKANA:"Ikan", PAN:"Roti", CHA:"Teh", SUSHI:"Nasi cuka dengan topping ikan, makanan khas Jepang", UDON:"Mi tebal berwarna putih khas Jepang",
+  KABAN:"Tas", KUTSU:"Sepatu", MISE:"Toko", EN:"Mata uang Jepang (Yen)", TAKAI:"Mahal / tinggi", YASUI:"Murah", ATARASHII:"Baru", FURUI:"Lama / tua (untuk benda)",
+  DENSHA:"Kereta listrik", BASU:"Bus", KURUMA:"Mobil", FUNE:"Kapal", EKI:"Stasiun", KIPPU:"Tiket", MICHI:"Jalan", HAYAI:"Cepat",
+  RYOKOU:"Perjalanan / wisata", ONSEN:"Pemandian air panas", TERA:"Kuil Buddha", HOTERU:"Hotel", OMIYAGE:"Oleh-oleh", TANOSHII:"Menyenangkan", KIREI:"Cantik / bersih", SAIKOU:"Terbaik",
+  HARU:"Musim semi", NATSU:"Musim panas", AKI:"Musim gugur", FUYU:"Musim dingin", SAKURA:"Bunga sakura", YUKI:"Salju", AME:"Hujan", KAZE:"Angin (juga berarti flu / masuk angin)",
+  ONGAKU:"Musik", EIGA:"Film", SHASHIN:"Foto", RYOURI:"Memasak / masakan", SUPOOTSU:"Olahraga", DOKUSHO:"Membaca (hobi)", ANIME:"Film kartun Jepang",
+  YUME:"Mimpi / cita-cita", SENSEI:"Guru", ISHA:"Dokter", DAIGAKU:"Universitas", HATARAKU:"Bekerja", NARU:"Menjadi", BENKYOU:"Belajar", SHOURAI:"Masa depan",
+  ATAMA:"Kepala", ONAKA:"Perut", NODO:"Tenggorokan", NETSU:"Demam", KUSURI:"Obat", GENKI:"Sehat / bersemangat", ITAI:"Sakit / nyeri"
+};
+const wsClue = w => WS_CLUES[w] || ('Kata ' + w.length + ' huruf, diawali huruf "' + w[0] + '"');
+let wsQueue = [], wsPlayersOpen = false;
 // ==================== STATE ====================
 let currentPage = 'dashboard';
 let currentMaterial = null;
@@ -1022,13 +1043,14 @@ let currentGameSpice = 'all';
 // Hand raise system
 let handRaiseList = JSON.parse(localStorage.getItem('was4bi_hands') || '[]');
 let usedQ = new Set();
+let handIgnoreUntil = 0, playersIgnoreUntil = 0;
 let currentGameType = null; // 'individual' or 'group'
 // ==================== KONFIGURASI ====================
 const TEACHER_USER = 'guru';
 const TEACHER_PASS = 'guru123'; // GANTI! (login ini hanya di sisi browser, bukan keamanan sungguhan)
 // Isi dengan URL Firebase Realtime Database agar angkat tangan bekerja lintas HP.
 // Contoh: 'https://nama-proyek-default-rtdb.firebaseio.com'  (kosong = hanya satu perangkat)
-const DB_URL = '';
+const DB_URL = 'https://wasabi-p4-default-rtdb.asia-southeast1.firebasedatabase.app'.trim().replace(/\/+$/, ''); // tempel URL di antara tanda kutip ''
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 const saveLocal = () => localStorage.setItem('was4bi_hands', JSON.stringify(handRaiseList));
 async function dbLoad() {
@@ -1036,7 +1058,7 @@ async function dbLoad() {
   try { const d = await (await fetch(DB_URL + '/hands.json')).json(); return Object.values(d || {}); } catch(e) { return handRaiseList; }
 }
 async function dbAdd(entry) {
-  if (!DB_URL) { handRaiseList.push(entry); saveLocal(); return true; }
+  if (!DB_URL) { handRaiseList = handRaiseList.filter(h => String(h.id) !== String(entry.id)); handRaiseList.push(entry); saveLocal(); return true; }
   try { return (await fetch(DB_URL + '/hands/' + entry.id + '.json', {method:'PUT', body:JSON.stringify(entry)})).ok; }
   catch(e) { alert('Gagal mengirim, periksa koneksi lalu coba lagi.'); return false; }
 }
@@ -1045,6 +1067,24 @@ function dbUpdate(id, patch) {
   fetch(DB_URL + '/hands/' + id + '.json', {method:'PATCH', body:JSON.stringify(patch)}).catch(() => {});
 }
 function dbClear() { if (!DB_URL) return saveLocal(); fetch(DB_URL + '/hands.json', {method:'DELETE'}).catch(() => {}); }
+async function dbPlayersLoad() {
+  if (!DB_URL) return JSON.parse(localStorage.getItem('was4bi_roster') || '[]');
+  try { const d = await (await fetch(DB_URL + '/players.json')).json(); return Object.values(d || {}); } catch(e) { return null; }
+}
+async function dbPlayerAdd(p) {
+  if (!DB_URL) { const l = JSON.parse(localStorage.getItem('was4bi_roster') || '[]'); l.push(p); localStorage.setItem('was4bi_roster', JSON.stringify(l)); return true; }
+  try { return (await fetch(DB_URL + '/players/' + p.id + '.json', {method:'PUT', body:JSON.stringify(p)})).ok; }
+  catch(e) { alert('Gagal bergabung, periksa koneksi lalu coba lagi.'); return false; }
+}
+async function checkDb() {
+  const el = document.getElementById('dbStatus'); if (!el || !DB_URL) return;
+  try {
+    const r = await fetch(DB_URL + '/hands.json');
+    el.style.color = r.ok ? 'var(--wasabi)' : '#ff8a80';
+    el.textContent = r.ok ? '✅ Terhubung ke Firebase' : '❌ Firebase menolak akses (periksa tab Rules). Kode: ' + r.status;
+  } catch (e) { el.style.color = '#ff8a80'; el.textContent = '❌ Tidak bisa terhubung. Periksa kembali DB_URL.'; }
+}
+function dbPlayersClear() { if (!DB_URL) { localStorage.removeItem('was4bi_roster'); return Promise.resolve(); } return fetch(DB_URL + '/players.json', {method:'DELETE'}).catch(() => {}); }
 // ==================== CHECK IF STUDENT VIEW ====================
 function checkStudentView() {
   const params = new URLSearchParams(window.location.search);
@@ -1065,14 +1105,7 @@ function renderStudentView(gameType) {
   const title = document.getElementById('studentTitle');
   const subtitle = document.getElementById('studentSubtitle');
   if (gameType === 'individual') {
-    title.textContent = '🙋 Angkat Tangan';
-    subtitle.textContent = 'GAME INDIVIDU • WAS4BI';
-    formArea.innerHTML = `
-      <input type="text" id="studentName" placeholder="✍️ Tulis nama lengkapmu..." style="text-align:center">
-      <button class="raise-hand-btn" onclick="raiseHandIndividual()">
-        <i class="fas fa-hand-paper"></i> Angkat Tangan! 🙋
-      </button>
-    `;
+    renderStudentIndividual();
   } else {
     title.textContent = '👥 Pilih Kelompok';
     subtitle.textContent = 'GAME KELOMPOK • WAS4BI';
@@ -1093,26 +1126,40 @@ function renderStudentView(gameType) {
     `;
   }
 }
-async function raiseHandIndividual() {
-  const name = document.getElementById('studentName').value.trim();
+function getMe() { try { return JSON.parse(localStorage.getItem('was4bi_me') || 'null'); } catch(e) { return null; } }
+function renderStudentIndividual() {
+  document.getElementById('studentSubtitle').textContent = 'GAME INDIVIDU • WAS4BI';
+  const me = getMe(), title = document.getElementById('studentTitle'), area = document.getElementById('studentFormArea');
+  if (!me) {
+    title.textContent = '🍣 Gabung Game';
+    area.innerHTML = `<input type="text" id="studentName" maxlength="30" placeholder="✍️ Tulis nama lengkapmu..." style="text-align:center">
+      <button class="raise-hand-btn" onclick="joinPlayer()"><i class="fas fa-sign-in-alt"></i> Gabung! 🍣</button>`;
+  } else {
+    title.textContent = '🙋 Halo, ' + me.name;
+    area.innerHTML = `<button class="raise-hand-btn" id="raiseBtn" onclick="raiseHandIndividual()"><i class="fas fa-hand-paper"></i> Angkat Tangan! 🙋</button>
+      <p style="font-size:12px;margin-top:14px;opacity:.7"><a href="#" onclick="leaveGame();return false" style="color:inherit">Bukan kamu? Ganti nama</a></p>`;
+  }
+}
+async function joinPlayer() {
+  const name = document.getElementById('studentName').value.trim().replace(/\s+/g, ' ');
   if (!name) { alert('Tulis namamu dulu ya!'); return; }
-  const entry = {
-    id: Date.now(),
-    type: 'individual',
-    name: name,
-    group: null,
-    time: new Date().toLocaleTimeString('id-ID'),
-    timestamp: Date.now(),
-    status: 'raised'
-  };
-  if (!(await dbAdd(entry))) return;
-  const btn = document.querySelector('.raise-hand-btn');
-  btn.classList.add('raised');
+  const roster = (await dbPlayersLoad()) || [];
+  if (roster.some(p => String(p.name).toLowerCase() === name.toLowerCase())) { alert('Nama itu sudah dipakai. Tambahkan inisial atau nomor absen ya.'); return; }
+  const me = {id: Date.now() + '' + Math.floor(Math.random() * 1000), name, joinedAt: Date.now()};
+  if (!(await dbPlayerAdd(me))) return;
+  localStorage.setItem('was4bi_me', JSON.stringify(me));
+  renderStudentIndividual();
+}
+function leaveGame() { localStorage.removeItem('was4bi_me'); renderStudentIndividual(); }
+async function raiseHandIndividual() {
+  const me = getMe(); if (!me) return;
+  const btn = document.getElementById('raiseBtn'), orig = btn.innerHTML, status = document.getElementById('studentStatus');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-check"></i> Tangan Terangkat! ✨';
-  const status = document.getElementById('studentStatus');
-  status.classList.add('show');
-  status.innerHTML = `✅ <strong>${esc(name)}</strong>, tanganmu sudah terangkat!<br><small>Tunggu dipanggil oleh guru ya~ 🍣</small>`;
+  const entry = {id: 'p' + me.id, type:'individual', name: me.name, playerId: me.id, group: null, time: new Date().toLocaleTimeString('id-ID'), timestamp: Date.now(), status:'raised'};
+  if (!(await dbAdd(entry))) { btn.disabled = false; return; }
+  btn.classList.add('raised'); btn.innerHTML = '<i class="fas fa-check"></i> Tangan Terangkat! ✨';
+  status.classList.add('show'); status.innerHTML = `✅ <strong>${esc(me.name)}</strong>, tanganmu sudah terangkat!<br><small>Tunggu dipanggil oleh guru ya~ 🍣</small>`;
+  setTimeout(() => { btn.disabled = false; btn.classList.remove('raised'); btn.innerHTML = orig; status.classList.remove('show'); }, 8000);
 }
 async function raiseHandGroup() {
   const name = document.getElementById('studentName').value.trim();
@@ -1120,7 +1167,7 @@ async function raiseHandGroup() {
   if (!name) { alert('Tulis namamu dulu ya!'); return; }
   if (!group) { alert('Pilih kelompokmu dulu ya!'); return; }
   const entry = {
-    id: Date.now(),
+    id: 'g' + GROUP_NAMES.indexOf(group),
     type: 'group',
     name: name,
     group: group,
@@ -1129,19 +1176,22 @@ async function raiseHandGroup() {
     status: 'raised'
   };
   if (!(await dbAdd(entry))) return;
-  const btn = document.querySelector('.raise-hand-btn');
+  const btn = document.querySelector('.raise-hand-btn'), orig = btn.innerHTML;
   btn.classList.add('raised');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-check"></i> Tangan Terangkat! ✨';
   const status = document.getElementById('studentStatus');
   status.classList.add('show');
   status.innerHTML = `✅ <strong>${esc(group)}</strong> (${esc(name)}), tangan kelompok sudah terangkat!<br><small>Tunggu dipanggil oleh guru ya~ 🍣</small>`;
+  setTimeout(() => { btn.disabled = false; btn.classList.remove('raised'); btn.innerHTML = orig; status.classList.remove('show'); }, 8000);
 }
 // Refresh hand list periodically
 setInterval(async () => {
-  if (currentPage === 'gameIndividual' || currentPage === 'gameGroup' || currentPage === 'dashboard') {
-    handRaiseList = await dbLoad();
+  if (!currentGameType && document.getElementById('mainApp').style.display === 'block' && (currentPage === 'game' || currentPage === 'dashboard')) {
+    const fresh = await dbLoad();
+    if (Date.now() >= handIgnoreUntil) handRaiseList = fresh;
     renderHandList();
+    if (currentPage === 'game' && gameMode === 'individual') await syncPlayers();
   }
 }, 3000);
 // ==================== LOGIN ====================
@@ -1171,12 +1221,9 @@ function showPage(page) {
   if(page === 'dashboard') {
     document.getElementById('pageTitle').innerHTML = '🏮 Dashboard';
     renderDashboard();
-  } else if(page === 'gameIndividual') {
-    document.getElementById('pageTitle').innerHTML = '🎮 Game Individu';
-    renderIndividualGame();
-  } else if(page === 'gameGroup') {
-    document.getElementById('pageTitle').innerHTML = '👥 Game Kelompok';
-    renderGroupGame();
+  } else if(page === 'game') {
+    document.getElementById('pageTitle').innerHTML = '🔍 Game Word Search';
+    renderWordSearchGame();
   } else if(page === 'admin') {
     document.getElementById('pageTitle').innerHTML = '⚙️ Kelola Konten';
     renderAdmin();
@@ -1205,7 +1252,7 @@ function renderDashboard() {
   const area = document.getElementById('contentArea');
   const ganjil = Object.entries(MATERIALS).filter(([k,v]) => v.semester === 'ganjil');
   const genap = Object.entries(MATERIALS).filter(([k,v]) => v.semester === 'genap');
-  const totalQ = Object.values(gameQuestions).reduce((a,b) => a+b.length, 0);
+  const totalQ = Object.values(WORDSEARCH_DATA).reduce((a,b) => a+b.words.length, 0);
   area.innerHTML = `
     <div class="fade-in">
       <div class="dashboard-hero">
@@ -1223,12 +1270,12 @@ function renderDashboard() {
         <div class="stat-card">
           <div class="stat-icon" style="background:rgba(212,160,23,0.2);color:var(--gold)"><i class="fas fa-pepper-hot"></i></div>
           <h3>${totalQ}</h3>
-          <p>Soal (Biji Wasabi)</p>
+          <p>Kata Tersembunyi</p>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:rgba(127,176,105,0.2);color:var(--wasabi)"><i class="fas fa-gamepad"></i></div>
           <h3>2</h3>
-          <p>Jenis Permainan</p>
+          <p>Mode Word Search</p>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:rgba(255,182,193,0.2);color:var(--ginger)"><i class="fas fa-hand-paper"></i></div>
@@ -1245,7 +1292,7 @@ function renderDashboard() {
             <h3>${v.title}</h3>
             <div class="card-jp">${v.jp}</div>
             <p>${v.description}</p>
-            <span class="card-tag">${gameQuestions[k]?.length || 0} soal</span>
+            <span class="card-tag">${WORDSEARCH_DATA[k]?.words.length || 0} kata</span>
           </div>
         `).join('')}
       </div>
@@ -1258,7 +1305,7 @@ function renderDashboard() {
             <h3>${v.title}</h3>
             <div class="card-jp">${v.jp}</div>
             <p>${v.description}</p>
-            <span class="card-tag">${gameQuestions[k]?.length || 0} soal</span>
+            <span class="card-tag">${WORDSEARCH_DATA[k]?.words.length || 0} kata</span>
           </div>
         `).join('')}
       </div>
@@ -1332,379 +1379,64 @@ function getCultureNote(key) {
   };
   return notes[key] || '';
 }
-// ==================== INDIVIDUAL GAME ====================
-function renderIndividualGame() {
-  const area = document.getElementById('contentArea');
-  gameScore = 0; gameCorrect = 0; gameTotal = 0; openedBoxes = new Set();
-  // Generate QR URL for student
-  const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const qrUrl = baseUrl + '?game=individual';
-  area.innerHTML = `
-    <div class="fade-in">
-      <div class="section-block" style="text-align:center;margin-bottom:20px">
-        <h2><i class="fas fa-gamepad"></i> Game Individu - Kotak Misteri Wasabi 🌶️</h2>
-        <p style="color:var(--cream-dark);font-size:13px;margin-bottom:14px">Pilih kotak secara acak. Semakin pedas wasabi, semakin tinggi poinnya!</p>
-        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
-          <span class="spice-indicator" style="background:rgba(129,199,132,0.2);color:var(--mild)">🌱 Mild = 5 poin</span>
-          <span class="spice-indicator" style="background:rgba(255,213,79,0.2);color:var(--medium)">🌶️ Medium = 10 poin</span>
-          <span class="spice-indicator" style="background:rgba(255,138,101,0.2);color:var(--hot)">🔥 Hot = 15 poin</span>
-          <span class="spice-indicator" style="background:rgba(229,57,53,0.2);color:var(--extra-hot)">💥 Extra Hot = 25 poin</span>
-        </div>
-      </div>
-      <div class="hand-raise-section">
-        <h3><i class="fas fa-qrcode"></i> QR Code Angkat Tangan (Individu)</h3>
-        <div class="qr-container">
-          <div class="qr-box" id="qrIndividual"></div>
-          <div class="qr-info">
-            <h4>📱 Scan untuk Murid</h4>
-            <p>Murid scan QR ini, tulis nama, lalu klik "Angkat Tangan". Daftar tangan terangkat muncul di bawah.</p>
-            <div class="qr-url">${qrUrl}</div>
-          </div>
-        </div>
-      </div>
-      <div class="hand-raise-section">
-        <h3><i class="fas fa-hand-paper"></i> Tangan Terangkat <span class="hand-count-badge" id="handCountBadge">0</span></h3>
-        <div class="hand-list" id="handList">
-          <p style="color:var(--cream-dark);font-size:12px">Belum ada yang mengangkat tangan.</p>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:8px">
-          <button class="btn-secondary" onclick="lowerAllHands()"><i class="fas fa-hand-paper-slash"></i> Turunkan Semua</button>
-          <button class="btn-secondary" onclick="clearHandHistory()"><i class="fas fa-trash"></i> Hapus Riwayat</button>
-        </div>
-      </div>
-      <div class="section-block">
-        <h2 style="border:none;padding:0;margin-bottom:12px">🎯 Pilih Filter Soal</h2>
-        <div class="topic-selector" id="gameTopicSelector">
-          ${Object.entries(MATERIALS).map(([k,v]) => `
-            <button class="topic-btn" onclick="setGameTopic('${k}',this)">${v.icon} ${v.title}</button>
-          `).join('')}
-          <button class="topic-btn active" onclick="setGameTopic('all',this)">🎲 Semua</button>
-        </div>
-        <div class="difficulty-selector" id="gameSpiceSelector">
-          <button class="diff-btn mild" onclick="setGameSpice('mild',this)">🌱 Mild</button>
-          <button class="diff-btn medium" onclick="setGameSpice('medium',this)">🌶️ Medium</button>
-          <button class="diff-btn hot" onclick="setGameSpice('hot',this)">🔥 Hot</button>
-          <button class="diff-btn extra" onclick="setGameSpice('extra',this)">💥 Extra Hot</button>
-          <button class="diff-btn active" style="color:var(--cream);background:var(--sushi-red);border-color:var(--sushi-red)" onclick="setGameSpice('all',this)">🎲 Semua Level</button>
-        </div>
-      </div>
-      <div class="game-score">
-        <h3>Skor Anda</h3>
-        <div class="score-num" id="gameScoreDisplay">0 / 0</div>
-      </div>
-      <div class="game-board" id="gameBoard">
-        ${Array.from({length:16}, (_,i) => `
-          <div class="game-box" id="box${i}" onclick="openBox(${i})">
-            <span class="box-num">${i+1}</span>
-            <span>🍣</span>
-          </div>
-        `).join('')}
-      </div>
-      <div style="text-align:center;margin-top:14px">
-        <button class="btn-secondary" onclick="resetGame()"><i class="fas fa-redo"></i> Reset Game</button>
-      </div>
-    </div>
-  `;
-  // Generate QR
-  setTimeout(() => {
-    const qrContainer = document.getElementById('qrIndividual');
-    if (qrContainer && typeof QRCode !== 'undefined') {
-      new QRCode(qrContainer, {
-        text: qrUrl,
-        width: 140,
-        height: 140,
-        colorDark: "#c0392b",
-        colorLight: "#FFFAF0",
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    }
-    renderHandList();
-  }, 100);
-}
-function setGameTopic(topic, btn) {
-  currentGameTopic = topic;
-  document.querySelectorAll('#gameTopicSelector .topic-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  resetGame();
-}
-function setGameSpice(spice, btn) {
-  currentGameSpice = spice;
-  document.querySelectorAll('#gameSpiceSelector .diff-btn').forEach(b => {
-    b.classList.remove('active');
-    b.style.background = 'transparent';
-  });
-  btn.classList.add('active');
-  resetGame();
-}
-function getGameQuestion() {
-  let pool = [];
-  const topics = currentGameTopic === 'all' ? Object.keys(gameQuestions) : [currentGameTopic];
-  topics.forEach(t => {
-    const qs = gameQuestions[t] || [];
-    qs.forEach(q => {
-      if (currentGameSpice === 'all' || q.spice === currentGameSpice) {
-        pool.push({ ...q, topic: MATERIALS[t].title, topicKey: t });
-      }
-    });
-  });
-  if (pool.length === 0) return null;
-  let fresh = pool.filter(q => !usedQ.has(q.q));
-  if (fresh.length === 0) { usedQ.clear(); fresh = pool; }
-  const pick = fresh[Math.floor(Math.random() * fresh.length)];
-  usedQ.add(pick.q);
-  return pick;
-}
-function openBox(idx) {
-  if(openedBoxes.has(idx)) return;
-  const q = getGameQuestion();
-  if(!q) { notify('Tidak ada soal untuk filter ini!', true); return; }
-  const modal = document.getElementById('quizModal');
-  const content = document.getElementById('quizContent');
-  const spiceInfo = SPICE_LEVELS[q.spice];
-  content.innerHTML = `
-    <h3>🍣 Soal #${gameTotal + 1}</h3>
-    <div class="q-meta">
-      <span class="q-tag topic">${q.topic}</span>
-      <span class="q-tag spice spice-${q.spice}">${spiceInfo.label}</span>
-      <span class="q-tag" style="background:rgba(212,160,23,0.2);color:var(--gold)">+${spiceInfo.points} poin</span>
-    </div>
-    <div class="question">${q.q}</div>
-    <div class="quiz-options">
-      ${q.options.map((o,i) => `
-        <div class="quiz-option" onclick="selectOption(this,${i})" data-idx="${i}">${String.fromCharCode(65+i)}. ${o}</div>
-      `).join('')}
-    </div>
-    <button class="quiz-submit" onclick="submitAnswer(${q.answer},${idx},${spiceInfo.points})">Jawab</button>
-    <div class="quiz-result" id="quizResult"></div>
-  `;
-  modal.classList.add('show');
-}
-function selectOption(el, idx) {
-  document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-}
-function submitAnswer(correct, boxIdx, points) {
-  const selected = document.querySelector('.quiz-option.selected');
-  if(!selected) { notify('Pilih jawaban terlebih dahulu!', true); return; }
-  const selIdx = parseInt(selected.dataset.idx);
-  const result = document.getElementById('quizResult');
-  const box = document.getElementById('box' + boxIdx);
-  openedBoxes.add(boxIdx);
-  gameTotal++;
-  document.querySelectorAll('.quiz-option').forEach(o => {
-    o.style.pointerEvents = 'none';
-    if(parseInt(o.dataset.idx) === correct) o.classList.add('correct-answer');
-  });
-  if(selIdx === correct) {
-    gameCorrect++;
-    gameScore += points;
-    box.classList.add('opened','correct');
-    box.innerHTML = `<span class="box-num">${boxIdx+1}</span><span>✅</span>`;
-    result.className = 'quiz-result show correct';
-    result.innerHTML = `🎉 Benar! +${points} poin`;
-  } else {
-    selected.classList.add('wrong-answer');
-    box.classList.add('opened','wrong');
-    box.innerHTML = `<span class="box-num">${boxIdx+1}</span><span>❌</span>`;
-    result.className = 'quiz-result show wrong';
-    result.innerHTML = '❌ Salah! Jawaban yang benar ditandai hijau.';
-  }
-  document.getElementById('gameScoreDisplay').textContent = `${gameScore} poin (${gameCorrect}/${gameTotal} benar)`;
-  result.innerHTML += '<br><button class="quiz-submit" style="margin-top:10px" onclick="document.getElementById(\'quizModal\').classList.remove(\'show\')">Lanjut ▶</button>';
-}
-function resetGame() {
-  gameScore = 0; gameCorrect = 0; gameTotal = 0; openedBoxes = new Set(); usedQ.clear();
-  const board = document.getElementById('gameBoard');
-  if(board) {
-    board.innerHTML = Array.from({length:16}, (_,i) => `
-      <div class="game-box" id="box${i}" onclick="openBox(${i})">
-        <span class="box-num">${i+1}</span>
-        <span>🍣</span>
-      </div>
-    `).join('');
-  }
-  const score = document.getElementById('gameScoreDisplay');
-  if(score) score.textContent = '0 / 0';
-}
 // ==================== HAND RAISE MANAGEMENT ====================
 function renderHandList() {
   const list = document.getElementById('handList');
   const badge = document.getElementById('handCountBadge');
-  if (!list) return;
-  const raised = handRaiseList.filter(h => h.status === 'raised').sort((a,b) => a.timestamp - b.timestamp);
+  const raised = handRaiseList.filter(h => h.status === 'raised' && (currentPage !== 'game' || h.type === gameMode)).sort((a,b) => a.timestamp - b.timestamp);
   if (badge) badge.textContent = raised.length;
   // Update dashboard count if visible
   const dashCount = document.getElementById('handCountDash');
   if (dashCount) dashCount.textContent = raised.length;
+  if (!list) return;
   if (raised.length === 0) {
     list.innerHTML = '<p style="color:var(--cream-dark);font-size:12px">Belum ada yang mengangkat tangan.</p>';
     return;
   }
-  list.innerHTML = raised.map((h, idx) => `
+  const medal = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  list.innerHTML = raised.slice(0, 5).map((h, idx) => `
     <div class="hand-item raised">
       <div class="hand-info">
-        <div class="hand-icon">${h.type === 'group' ? '👥' : '🙋'}</div>
+        <div class="hand-icon">${medal[idx]}</div>
         <div>
           <div class="hand-name">${esc(h.name)} ${h.group ? `<span style="color:var(--wasabi);font-size:11px">• ${esc(h.group)}</span>` : ''}</div>
           <div class="hand-meta">${h.type==='group'?'Kelompok':'Individu'} • Urutan #${idx + 1}</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div class="hand-time">${h.time}</div>
+        <div class="hand-time">${esc(h.time)}</div>
         <div class="hand-actions">
-          <button class="hand-btn call" onclick="callStudent(${h.id})"><i class="fas fa-bullhorn"></i> Panggil</button>
-          <button class="hand-btn lower" onclick="lowerHand(${h.id})"><i class="fas fa-hand-paper-slash"></i></button>
+          <button class="hand-btn call" onclick="callStudent('${esc(h.id)}')"><i class="fas fa-bullhorn"></i> Panggil</button>
+          <button class="hand-btn lower" onclick="lowerHand('${esc(h.id)}')"><i class="fas fa-hand-paper-slash"></i></button>
         </div>
       </div>
     </div>
-  `).join('');
-}
-function callStudent(id) {
-  const entry = handRaiseList.find(h => h.id === id);
-  if (entry) {
-    notify(`📢 Memanggil ${entry.name}${entry.group ? ' (' + entry.group + ')' : ''}!`);
-  }
+  `).join('') + (raised.length > 5 ? `<p class="hand-more">+${raised.length - 5} tangan lainnya tercatat (hanya 5 tercepat ditampilkan)</p>` : '');
 }
 function lowerHand(id) {
-  const e = handRaiseList.find(h => h.id === id);
-  if (e) { e.status = 'lowered'; dbUpdate(id, {status:'lowered'}); renderHandList(); notify(`Tangan ${e.name} diturunkan`); }
+  const e = handRaiseList.find(h => String(h.id) === String(id));
+  if (e) { handIgnoreUntil = Date.now() + 4000; e.status = 'lowered'; dbUpdate(id, {status:'lowered'}); renderHandList(); notify(`Tangan ${e.name} diturunkan`); }
 }
 function lowerAllHands() {
+  handIgnoreUntil = Date.now() + 4000;
   handRaiseList.forEach(h => { if (h.status === 'raised') { h.status = 'lowered'; dbUpdate(h.id, {status:'lowered'}); } });
   renderHandList(); notify('Semua tangan diturunkan');
 }
 function clearHandHistory() {
-  if (confirm('Hapus semua riwayat angkat tangan?')) { handRaiseList = []; dbClear(); renderHandList(); notify('Riwayat dihapus'); }
+  if (confirm('Hapus semua riwayat angkat tangan?')) { handIgnoreUntil = Date.now() + 4000; handRaiseList = []; dbClear(); renderHandList(); notify('Riwayat dihapus'); }
 }
 // ==================== GROUP GAME ====================
-function renderGroupGame() {
-  const area = document.getElementById('contentArea');
-  wsFoundWords = [];
-  wsTeams = [
-    {name:"Tim Sushi 🍣",score:0},
-    {name:"Tim Bento 🍱",score:0},
-    {name:"Tim Onigiri 🍙",score:0},
-    {name:"Tim Ramen 🍜",score:0},
-    {name:"Tim Gyoza 🥟",score:0},
-    {name:"Tim Dango 🍡",score:0}
-  ];
-  const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const qrUrl = baseUrl + '?game=group';
-  area.innerHTML = `
-    <div class="fade-in">
-      <div class="section-block" style="margin-bottom:20px">
-        <h2><i class="fas fa-users"></i> Game Kelompok - Word Search 🍣</h2>
-        <p style="color:var(--cream-dark);font-size:13px;margin-bottom:14px">Cari kata-kata tersembunyi di dalam kotak! Setiap tim bergiliran menemukan kata.</p>
-        <div class="topic-selector" id="wsTopicSelector">
-          ${Object.entries(MATERIALS).map(([k,v]) => `
-            <button class="topic-btn ${k===wsCurrentTopic?'active':''}" onclick="setWsTopic('${k}',this)">${v.icon} ${v.title}</button>
-          `).join('')}
-        </div>
-      </div>
-      <div class="hand-raise-section">
-        <h3><i class="fas fa-qrcode"></i> QR Code Angkat Tangan (Kelompok)</h3>
-        <div class="qr-container">
-          <div class="qr-box" id="qrGroup"></div>
-          <div class="qr-info">
-            <h4>📱 Scan untuk Kelompok</h4>
-            <p>Kelompok scan QR ini, tulis nama wakil, pilih kelompok, lalu klik "Angkat Tangan".</p>
-            <div class="qr-url">${qrUrl}</div>
-          </div>
-        </div>
-      </div>
-      <div class="hand-raise-section">
-        <h3><i class="fas fa-hand-paper"></i> Tangan Terangkat (Kelompok) <span class="hand-count-badge" id="handCountBadge">0</span></h3>
-        <div class="hand-list" id="handList">
-          <p style="color:var(--cream-dark);font-size:12px">Belum ada kelompok yang mengangkat tangan.</p>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:8px">
-          <button class="btn-secondary" onclick="lowerAllHands()"><i class="fas fa-hand-paper-slash"></i> Turunkan Semua</button>
-          <button class="btn-secondary" onclick="clearHandHistory()"><i class="fas fa-trash"></i> Hapus Riwayat</button>
-        </div>
-      </div>
-      <div id="wsGameArea"></div>
-    </div>
-  `;
-  setTimeout(() => {
-    const qrContainer = document.getElementById('qrGroup');
-    if (qrContainer && typeof QRCode !== 'undefined') {
-      new QRCode(qrContainer, {
-        text: qrUrl,
-        width: 140,
-        height: 140,
-        colorDark: "#c0392b",
-        colorLight: "#FFFAF0",
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    }
-    renderHandList();
-    startWordSearch();
-  }, 100);
-}
 function setWsTopic(topic, btn) {
   wsCurrentTopic = topic;
   document.querySelectorAll('#wsTopicSelector .topic-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   startWordSearch();
 }
-function startWordSearch() {
-  const data = WORDSEARCH_DATA[wsCurrentTopic];
-  if(!data) return;
-  wsFoundWords = [];
-  const gridSize = 10;
-  const grid = generateWordGrid(data.words, gridSize);
-  const wsArea = document.getElementById('wsGameArea');
-  wsArea.innerHTML = `
-    <div class="section-block">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-        <div>
-          <h3 style="font-size:16px;margin-bottom:4px">${data.title}</h3>
-          <p style="color:var(--cream-dark);font-size:12px">Temukan ${data.words.length} kata tersembunyi!</p>
-        </div>
-        <button class="btn-secondary" onclick="startWordSearch()"><i class="fas fa-redo"></i> Acak Ulang</button>
-      </div>
-      <div class="ws-words" id="wsWords">
-        ${data.words.map(w => `<div class="ws-word" id="wsw_${w}">${w}</div>`).join('')}
-      </div>
-      <div class="ws-grid-wrapper">
-        <div class="ws-grid" id="wsGrid" style="grid-template-columns:repeat(${gridSize},36px)">
-          ${grid.map((row,r) => row.map((cell,c) => `
-            <div class="ws-cell" data-r="${r}" data-c="${c}" 
-                 onmousedown="wsStartSelect(${r},${c})" 
-                 onmouseover="wsMoveSelect(${r},${c})" 
-                 onmouseup="wsEndSelect()">${cell}</div>
-          `).join('')).join('')}
-        </div>
-        <div class="ws-info">
-          <h4>📊 Skor Tim</h4>
-          ${wsTeams.map((t,i) => `
-            <div class="ws-team-score">
-              <span style="font-size:13px">${t.name}</span>
-              <span style="font-weight:700;color:var(--gold)" id="teamScore${i}">${t.score}</span>
-            </div>
-          `).join('')}
-          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-            <p style="font-size:11px;color:var(--cream-dark);margin-bottom:8px">Pilih tim yang menemukan kata:</p>
-            <div class="topic-selector" id="wsTeamSelector">
-              ${wsTeams.map((t,i) => `
-                <button class="topic-btn ${i===wsCurrentTeam?'active':''}" onclick="selectWsTeam(${i},this)">${t.name}</button>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-let wsCurrentTeam = 0;
-function selectWsTeam(idx, btn) {
-  wsCurrentTeam = idx;
-  document.querySelectorAll('#wsTeamSelector .topic-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-function generateWordGrid(words, size) {
+let wsCurrentTeam = -1;
+function generateWordGridOnce(words, size) {
+  let allPlaced = true;
   let grid = Array.from({length:size}, () => Array(size).fill(''));
-  const directions = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1]];
+  const directions = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
   const katakana = 'ABCDEFGHIJKLMNOPRSTUWYZ';
   [...words].sort((a,b)=>b.length-a.length).forEach(word => {
     let placed = false;
@@ -1726,6 +1458,7 @@ function generateWordGrid(words, size) {
         placed = true;
       }
     }
+    if(!placed) allPlaced = false;
   });
   for(let r = 0; r < size; r++) {
     for(let c = 0; c < size; c++) {
@@ -1734,7 +1467,12 @@ function generateWordGrid(words, size) {
       }
     }
   }
-  return grid;
+  return {grid, ok: allPlaced};
+}
+function generateWordGrid(words, size) {
+  let res;
+  for(let i = 0; i < 50; i++) { res = generateWordGridOnce(words, size); if(res.ok) break; }
+  return res.grid;
 }
 function wsStartSelect(r, c) {
   wsSelecting = true;
@@ -1769,23 +1507,31 @@ function wsEndSelect() {
   const data = WORDSEARCH_DATA[wsCurrentTopic];
   if(data && !data.words.includes(word)) { const rv=[...word].reverse().join(''); if(data.words.includes(rv)) word=rv; }
   if(data && data.words.includes(word) && !wsFoundWords.includes(word)) {
+    if(word !== wsQueue[0]) {
+      notify('Itu bukan jawaban soal yang sedang tampil', true);
+      document.querySelectorAll('.ws-cell.selecting').forEach(c => c.classList.remove('selecting'));
+      wsSelectedCells = []; return;
+    }
+    if(!wsScorers()[wsCurrentTeam]) {
+      notify(gameMode === 'group' ? 'Pilih dulu tim yang menemukan kata (tombol Panggil / pilih tim)' : 'Pilih dulu pemain yang menemukan kata (tombol Panggil / cari nama)', true);
+      document.querySelectorAll('.ws-cell.selecting').forEach(c => c.classList.remove('selecting'));
+      wsSelectedCells = []; return;
+    }
     wsFoundWords.push(word);
     wsSelectedCells.forEach(({r,c}) => {
       const cell = document.querySelector(`.ws-cell[data-r="${r}"][data-c="${c}"]`);
       if(cell) cell.classList.add('found-cell');
     });
     const wordEl = document.getElementById('wsw_' + word);
-    if(wordEl) wordEl.classList.add('found');
-    wsTeams[wsCurrentTeam].score += 10;
-    const scoreEl = document.getElementById('teamScore' + wsCurrentTeam);
-    if(scoreEl) scoreEl.textContent = wsTeams[wsCurrentTeam].score;
-    notify(`${wsTeams[wsCurrentTeam].name} menemukan "${word}"! +10 poin`);
-    if(wsFoundWords.length === data.words.length) {
-      setTimeout(() => {
-        const winner = wsTeams.reduce((a,b) => a.score > b.score ? a : b);
-        notify(`🏆 Permainan selesai! Pemenang: ${winner.name} dengan ${winner.score} poin!`);
-      }, 500);
-    }
+    if(wordEl) { wordEl.classList.add('found'); wordEl.textContent = word; }
+    const sc = wsScorers()[wsCurrentTeam] || wsScorers()[0];
+    sc.score += 10;
+    if(gameMode === 'individual') { savePlayers(); wsCurrentTeam = -1; }
+    renderWsScores();
+    notify(`${sc.name} menemukan "${word}"! +10 poin`);
+    wsQueue.shift();
+    if(!wsQueue.length) wsFinish();
+    wsNewRound();
   }
   document.querySelectorAll('.ws-cell.selecting').forEach(c => c.classList.remove('selecting'));
   wsSelectedCells = [];
@@ -1797,174 +1543,244 @@ function updateWsSelection() {
     if(cell && !cell.classList.contains('found-cell')) cell.classList.add('selecting');
   });
 }
-// ==================== ADMIN PANEL ====================
-function renderAdmin() {
+// ==================== GAME WORD SEARCH (INDIVIDU & KELOMPOK) ====================
+const GROUP_NAMES = ["Tim Sushi 🍣","Tim Bento 🍱","Tim Onigiri 🍙","Tim Ramen 🍜","Tim Gyoza 🥟","Tim Dango 🍡"];
+let gameMode = 'individual';
+let wsIndiv = (() => { try { return JSON.parse(localStorage.getItem('was4bi_players') || '[]'); } catch(e) { return []; } })();
+let wsGroup = GROUP_NAMES.map(n => ({name:n, score:0}));
+let wsTimerId = null, wsStartTime = 0, wsFinished = false;
+const wsScorers = () => gameMode === 'group' ? wsGroup : wsIndiv;
+function setGameMode(m) { gameMode = m; wsCurrentTeam = -1; renderWordSearchGame(); }
+function renderWordSearchGame() {
   const area = document.getElementById('contentArea');
+  if (gameMode === 'individual') wsCurrentTeam = -1;
+  const isG = gameMode === 'group';
+  const qrUrl = window.location.href.split('?')[0].split('#')[0] + '?game=' + gameMode;
   area.innerHTML = `
     <div class="fade-in">
+      <div class="section-block" style="margin-bottom:20px">
+        <h2><i class="fas fa-th"></i> Game Word Search 🍣</h2>
+        <p style="color:var(--cream-dark);font-size:13px;margin-bottom:12px">Temukan kata-kata tersembunyi (horizontal, vertikal, diagonal, bisa terbalik). Setiap kata benar = +10 poin.</p>
+        <div class="topic-selector" style="margin-bottom:10px">
+          <button class="topic-btn ${!isG ? 'active' : ''}" onclick="setGameMode('individual')">🙋 Mode Individu</button>
+          <button class="topic-btn ${isG ? 'active' : ''}" onclick="setGameMode('group')">👥 Mode Kelompok</button>
+        </div>
+        <div class="topic-selector" id="wsTopicSelector">
+          ${Object.entries(MATERIALS).map(([k,v]) => `<button class="topic-btn ${k===wsCurrentTopic?'active':''}" onclick="setWsTopic('${k}',this)">${v.icon} ${v.title}</button>`).join('')}
+        </div>
+      </div>
+      <div class="hand-raise-section">
+        <h3><i class="fas fa-qrcode"></i> QR Angkat Tangan (${isG ? 'Kelompok' : 'Individu'})</h3>
+        <div class="qr-container">
+          <div class="qr-box" id="qrGame"></div>
+          <div class="qr-info">
+            <h4>📱 Scan untuk Murid</h4>
+            <p>${isG ? 'Wakil kelompok scan, tulis nama, pilih kelompok, lalu klik "Angkat Tangan".' : 'Murid scan, tulis nama untuk bergabung (jumlah tidak dibatasi), lalu tekan "Angkat Tangan" saat menemukan kata.'} Tekan <b>Panggil</b> untuk menjadikannya ${isG ? 'tim' : 'pemain'} yang mendapat poin.</p>
+            <div class="qr-url">${qrUrl}</div>
+            <p id="dbStatus" style="color:var(--gold);font-size:12px;margin-top:8px">${DB_URL ? '⏳ Mengecek koneksi Firebase…' : '⚠️ DB_URL belum diisi: angkat tangan & pendaftaran dari HP murid <b>tidak akan muncul</b> di layar ini.'}</p>
+          </div>
+        </div>
+      </div>
+      ${isG ? '' : `<div class="hand-raise-section">
+        <button class="panel-toggle ${wsPlayersOpen ? 'open' : ''}" onclick="togglePlayersPanel(this)"><span>👥 Daftar Pemain Bergabung <span class="hand-count-badge" id="playersCount">0</span></span><i class="fas fa-chevron-down"></i></button>
+        <div class="panel-body" id="playersBody" ${wsPlayersOpen ? '' : 'hidden'}></div>
+      </div>`}
+      <div class="hand-raise-section">
+        <h3><i class="fas fa-hand-paper"></i> 5 Tercepat Angkat Tangan <span class="hand-count-badge" id="handCountBadge">0</span></h3>
+        <div class="hand-list" id="handList"><p style="color:var(--cream-dark);font-size:12px">Belum ada yang mengangkat tangan.</p></div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn-secondary" onclick="lowerAllHands()"><i class="fas fa-hand-paper-slash"></i> Turunkan Semua</button>
+          <button class="btn-secondary" onclick="clearHandHistory()"><i class="fas fa-trash"></i> Hapus Riwayat</button>
+        </div>
+      </div>
+      <div id="wsGameArea"></div>
+    </div>`;
+  syncPlayers(); checkDb(); renderPlayersPanel();
+  setTimeout(() => {
+    const q = document.getElementById('qrGame');
+    if (q && typeof QRCode !== 'undefined') new QRCode(q, {text: qrUrl, width:140, height:140, colorDark:"#c0392b", colorLight:"#FFFAF0", correctLevel: QRCode.CorrectLevel.M});
+    renderHandList(); startWordSearch();
+  }, 100);
+}
+function startWordSearch() {
+  const data = WORDSEARCH_DATA[wsCurrentTopic];
+  if (!data) return;
+  wsFoundWords = []; wsFinished = false;
+  wsQueue = [...new Set(data.words)].sort(() => Math.random() - 0.5);
+  const size = 10, grid = generateWordGrid(data.words, size);
+  document.getElementById('wsGameArea').innerHTML = `
+    <div class="section-block">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div><h3 style="font-size:16px;margin-bottom:4px">${data.title}</h3>
+          <p style="color:var(--cream-dark);font-size:12px">Jawab ${wsQueue.length} soal • ⏱ <span id="wsTimer">00:00</span></p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="startWordSearch()"><i class="fas fa-redo"></i> Acak Ulang</button>
+          <button class="btn-secondary" onclick="resetWsScores()">Reset Skor</button>
+          ${gameMode === 'individual' ? '<button class="btn-secondary" onclick="clearWsPlayers()">Hapus Semua Pemain</button>' : ''}
+        </div>
+      </div>
+      <div class="ws-question" id="wsQuestion"></div>
+      <div class="ws-words" id="wsWords">${[...new Set(data.words)].map(w => `<div class="ws-word" id="wsw_${w}">${'_ '.repeat(w.length).trim()}</div>`).join('')}</div>
+      <div class="ws-grid-wrapper">
+        <div class="ws-grid" id="wsGrid" style="grid-template-columns:repeat(${size},36px)">
+          ${grid.map((row,r) => row.map((cell,c) => `<div class="ws-cell" data-r="${r}" data-c="${c}" onmousedown="wsStartSelect(${r},${c})" onmouseover="wsMoveSelect(${r},${c})" onmouseup="wsEndSelect()">${cell}</div>`).join('')).join('')}
+        </div>
+        <div class="ws-info"><h4>${gameMode === 'group' ? '📊 Skor Tim' : '🏆 Papan Skor'}</h4><div id="wsScorePanel"></div></div>
+      </div>
+    </div>`;
+  renderWsScores(); renderWsQuestion();
+  clearInterval(wsTimerId); wsStartTime = Date.now();
+  wsTimerId = setInterval(() => {
+    const el = document.getElementById('wsTimer');
+    if (!el) { clearInterval(wsTimerId); return; }
+    if (wsFinished) return;
+    const s = Math.floor((Date.now() - wsStartTime) / 1000);
+    el.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 1000);
+}
+function renderWsQuestion() {
+  const el = document.getElementById('wsQuestion'); if (!el) return;
+  const w = wsQueue[0], total = new Set(WORDSEARCH_DATA[wsCurrentTopic].words).size;
+  if (!w) { el.innerHTML = '<div class="q-label">🎉 Semua soal selesai</div>'; return; }
+  el.innerHTML = `<div class="q-label">📝 Soal ${wsFoundWords.length + 1} dari ${total}</div><div class="q-clue">${esc(wsClue(w))}</div>
+    <div class="q-meta">${w.length} huruf • Murid yang sudah tahu jawabannya angkat tangan, yang tercepat dipanggil untuk menemukan kata di grid</div>
+    <button class="btn-secondary" onclick="wsSkip()"><i class="fas fa-forward"></i> Lewati Soal</button>`;
+}
+function wsNewRound() {
+  handIgnoreUntil = Date.now() + 4000;
+  handRaiseList.forEach(h => { if (h.status === 'raised') { h.status = 'lowered'; dbUpdate(h.id, {status:'lowered'}); } });
+  renderHandList(); renderWsQuestion();
+}
+function wsSkip() { if (wsQueue.length > 1) wsQueue.push(wsQueue.shift()); wsNewRound(); }
+function savePlayers() { try { localStorage.setItem('was4bi_players', JSON.stringify(wsIndiv)); } catch(e) {} }
+async function syncPlayers() {
+  const list = await dbPlayersLoad(); if (!list || Date.now() < playersIgnoreUntil) return;
+  let added = 0;
+  list.forEach(p => { if (!wsIndiv.some(x => x.id === p.id)) { wsIndiv.push({id:p.id, name:p.name, score:0}); added++; } });
+  if (added) { savePlayers(); if (currentPage === 'game' && gameMode === 'individual') { renderWsBoard(); updatePlayerList(); } }
+}
+async function clearWsPlayers() {
+  if (!confirm('Hapus semua pemain dan skornya?')) return;
+  playersIgnoreUntil = Date.now() + 4000;
+  wsIndiv = []; wsCurrentTeam = -1; savePlayers(); await dbPlayersClear(); wsIndiv = []; savePlayers(); renderWsScores(); notify('Semua pemain dihapus');
+}
+function renderWsScores() {
+  const el = document.getElementById('wsScorePanel');
+  if (!el) return;
+  if (gameMode === 'group') {
+    el.innerHTML = wsGroup.map(s => `<div class="ws-team-score"><span style="font-size:13px">${esc(s.name)}</span><span style="font-weight:700;color:var(--gold)">${s.score}</span></div>`).join('') + `
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><p style="font-size:11px;color:var(--cream-dark);margin-bottom:8px">Poin untuk tim:</p>
+      <div class="topic-selector">${wsGroup.map((s,i) => `<button class="topic-btn ${i===wsCurrentTeam?'active':''}" onclick="selectWsTeam(${i})">${esc(s.name)}</button>`).join('')}</div></div>`;
+    return;
+  }
+  el.innerHTML = '<div id="wsBoard"></div><div id="wsPicker"></div>';
+  renderWsBoard(); renderWsPicker();
+}
+function togglePlayersPanel(btn) { wsPlayersOpen = !wsPlayersOpen; btn.classList.toggle('open', wsPlayersOpen); document.getElementById('playersBody').hidden = !wsPlayersOpen; }
+function renderPlayersPanel() {
+  const c = document.getElementById('playersCount'), b = document.getElementById('playersBody'); if (!c || !b) return;
+  c.textContent = wsIndiv.length;
+  b.innerHTML = wsIndiv.length ? wsIndiv.map((p, i) => `<div class="ws-team-score"><span style="font-size:13px">${i + 1}. ${esc(p.name)}</span><span style="font-weight:700;color:var(--gold)">${p.score}</span></div>`).join('') : '<p style="font-size:12px;color:var(--cream-dark)">Belum ada pemain yang bergabung.</p>';
+}
+function renderWsBoard() {
+  renderPlayersPanel();
+  const el = document.getElementById('wsBoard'); if (!el) return;
+  const ranked = wsIndiv.filter(p => p.score > 0).sort((a,b) => b.score - a.score), medal = ['🥇','🥈','🥉'];
+  el.innerHTML = `<p style="font-size:11px;color:var(--cream-dark);margin-bottom:8px">👥 ${wsIndiv.length} pemain bergabung • 🏆 ${ranked.length} sudah dapat poin</p>
+    <div style="max-height:260px;overflow-y:auto">${ranked.length ? ranked.map((p,i) => `<div class="ws-team-score"><span style="font-size:13px">${medal[i] || (i+1) + '.'} ${esc(p.name)}</span><span style="font-weight:700;color:var(--gold)">${p.score}</span></div>`).join('') : '<p style="font-size:12px;color:var(--cream-dark)">Belum ada yang mendapat poin.</p>'}</div>`;
+}
+function renderWsPicker() {
+  const el = document.getElementById('wsPicker'); if (!el) return;
+  const cur = wsIndiv[wsCurrentTeam];
+  el.innerHTML = `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+    <p style="font-size:12px;margin-bottom:8px">🎯 Pemain aktif: ${cur ? `<b style="color:var(--wasabi)">${esc(cur.name)}</b>` : '<span style="color:var(--cream-dark)">belum dipilih</span>'}</p>
+    <input type="text" id="wsPick" list="wsPlayerList" placeholder="Cari / ketik nama pemain..." onchange="pickWsPlayer(this.value)" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--cream)">
+    <datalist id="wsPlayerList"></datalist>
+    <p style="font-size:11px;color:var(--cream-dark);margin-top:6px">Pilih lewat tombol "Panggil" atau cari nama. Setelah poin diberikan, pemain aktif dikosongkan otomatis.</p></div>`;
+  updatePlayerList();
+}
+function updatePlayerList() { const dl = document.getElementById('wsPlayerList'); if (dl) dl.innerHTML = wsIndiv.map(p => `<option value="${esc(p.name)}">`).join(''); }
+function pickWsPlayer(name) {
+  name = name.trim(); if (!name) return;
+  let i = wsIndiv.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+  if (i < 0) { wsIndiv.push({id:'m' + Date.now(), name, score:0}); i = wsIndiv.length - 1; savePlayers(); notify('Pemain baru ditambahkan: ' + name); }
+  wsCurrentTeam = i; renderWsPicker(); renderWsBoard();
+}
+function wsFinish() {
+  wsFinished = true;
+  const s = Math.floor((Date.now() - wsStartTime) / 1000), r = wsScorers().filter(x => x.score > 0).sort((a,b) => b.score - a.score);
+  notify(`🏆 Selesai dalam ${Math.floor(s/60)}m ${s%60}d! ` + (r.length ? `Juara 1: ${r[0].name} (${r[0].score} poin)` : 'Belum ada poin.'));
+}
+function callStudent(id) {
+  const e = handRaiseList.find(h => String(h.id) === String(id));
+  if (!e) return;
+  if (currentPage === 'game') {
+    if (gameMode === 'group') { const i = wsGroup.findIndex(t => t.name === e.group); if (i >= 0) selectWsTeam(i); }
+    else {
+      let i = wsIndiv.findIndex(p => (e.playerId && p.id === e.playerId) || p.name === e.name);
+      if (i < 0) { wsIndiv.push({id: e.playerId || 'm' + Date.now(), name: e.name, score:0}); i = wsIndiv.length - 1; savePlayers(); }
+      wsCurrentTeam = i; renderWsPicker(); renderWsBoard();
+    }
+  }
+  notify(`📢 Memanggil ${e.name}${e.group ? ' (' + e.group + ')' : ''}!`);
+}
+function selectWsTeam(i) { wsCurrentTeam = i; renderWsScores(); }
+function resetWsScores() { wsScorers().forEach(s => s.score = 0); savePlayers(); renderWsScores(); notify('Skor direset'); }
+// ==================== ADMIN PANEL ====================
+function renderAdmin() {
+  document.getElementById('contentArea').innerHTML = `
+    <div class="fade-in">
       <div class="admin-tabs">
-        <button class="admin-tab active" onclick="showAdminTab('questions',this)">📝 Kelola Soal</button>
-        <button class="admin-tab" onclick="showAdminTab('addQuestion',this)">➕ Tambah Soal</button>
+        <button class="admin-tab active" onclick="showAdminTab('words',this)">🔤 Kelola Kata</button>
         <button class="admin-tab" onclick="showAdminTab('editMaterial',this)">📚 Edit Materi</button>
       </div>
       <div id="adminContent"></div>
-    </div>
-  `;
-  showAdminTab('questions');
+    </div>`;
+  showAdminTab('words');
 }
 function showAdminTab(tab, btn) {
-  if(btn) {
-    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-  const content = document.getElementById('adminContent');
-  if(tab === 'questions') {
-    content.innerHTML = `
-      <div class="admin-form">
-        <h3>📝 Daftar Soal per Sub-Tema (dengan Tingkat Kepedasan)</h3>
-        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn-secondary" onclick="exportQuestions()">⬇️ Ekspor Soal (JSON)</button><label class="btn-secondary" style="cursor:pointer">⬆️ Impor Soal<input type="file" accept=".json" hidden onchange="importQuestions(this)"></label></div>
-        <div class="topic-selector" style="margin-bottom:14px">
-          ${Object.entries(MATERIALS).map(([k,v]) => `
-            <button class="topic-btn" onclick="showQuestionsFor('${k}',this)">${v.icon} ${v.title} (${gameQuestions[k]?.length || 0})</button>
-          `).join('')}
-        </div>
-        <div id="questionListArea">
-          <p style="color:var(--cream-dark);font-size:13px">Pilih sub-tema untuk melihat daftar soal.</p>
-        </div>
-      </div>
-    `;
-  } else if(tab === 'addQuestion') {
-    content.innerHTML = `
-      <div class="admin-form">
-        <h3>➕ Tambah Soal Baru (Pilih Tingkat Kepedasan)</h3>
-        <div class="form-group">
-          <label>Sub-Tema</label>
-          <select id="newQTopic">
-            ${Object.entries(MATERIALS).map(([k,v]) => `<option value="${k}">${v.icon} ${v.title}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Tingkat Kepedasan (Wasabi Level)</label>
-          <select id="newQSpice">
-            <option value="mild">🌱 Mild (Mudah) — 5 poin</option>
-            <option value="medium" selected>🌶️ Medium (Sedang) — 10 poin</option>
-            <option value="hot">🔥 Hot (Sulit) — 15 poin</option>
-            <option value="extra">💥 Extra Hot (Sangat Sulit) — 25 poin</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Pertanyaan</label>
-          <textarea id="newQText" placeholder="Tulis pertanyaan di sini..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Pilihan A</label>
-          <input type="text" id="newQA" placeholder="Pilihan A">
-        </div>
-        <div class="form-group">
-          <label>Pilihan B</label>
-          <input type="text" id="newQB" placeholder="Pilihan B">
-        </div>
-        <div class="form-group">
-          <label>Pilihan C</label>
-          <input type="text" id="newQC" placeholder="Pilihan C">
-        </div>
-        <div class="form-group">
-          <label>Pilihan D</label>
-          <input type="text" id="newQD" placeholder="Pilihan D">
-        </div>
-        <div class="form-group">
-          <label>Jawaban Benar</label>
-          <select id="newQAnswer">
-            <option value="0">A</option>
-            <option value="1">B</option>
-            <option value="2">C</option>
-            <option value="3">D</option>
-          </select>
-        </div>
-        <button class="btn-primary" onclick="addQuestion()"><i class="fas fa-plus"></i> Tambahkan Soal</button>
-      </div>
-    `;
-  } else if(tab === 'editMaterial') {
-    content.innerHTML = `
-      <div class="admin-form">
-        <h3>📚 Edit Materi</h3>
-        <p style="color:var(--cream-dark);font-size:13px;margin-bottom:14px">Aktifkan "Mode Edit" di pojok kanan atas, lalu pilih sub-tema yang ingin diedit:</p>
-        <div class="topic-selector">
-          ${Object.entries(MATERIALS).map(([k,v]) => `
-            <button class="topic-btn" onclick="showMaterial('${k}');if(!editMode)toggleEditMode()">${v.icon} ${v.title}</button>
-          `).join('')}
-        </div>
-        <div style="margin-top:16px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:3px solid var(--wasabi)">
-          <p style="font-size:12px;color:var(--cream-dark)"><i class="fas fa-info-circle" style="color:var(--wasabi)"></i> <strong>Tips:</strong> Saat Mode Edit aktif, Anda dapat mengklik langsung pada teks untuk mengeditnya.</p>
-        </div>
-      </div>
-    `;
+  if (btn) { document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+  const c = document.getElementById('adminContent');
+  if (tab === 'words') {
+    c.innerHTML = `<div class="admin-form"><h3>🔤 Kata Word Search per Sub-Tema</h3>
+      <p style="color:var(--cream-dark);font-size:12px;margin-bottom:12px">Huruf A–Z saja (romaji), tanpa spasi, 2–10 huruf, 3–10 kata. Pisahkan dengan koma atau baris baru.</p>
+      <div class="topic-selector" style="margin-bottom:14px">${Object.entries(WORDSEARCH_DATA).map(([k,v]) => `<button class="topic-btn" onclick="showWordsFor('${k}',this)">${v.title}</button>`).join('')}</div>
+      <div id="wordEditArea"></div></div>`;
+  } else {
+    c.innerHTML = `<div class="admin-form"><h3>📚 Edit Materi</h3>
+      <p style="color:var(--cream-dark);font-size:13px;margin-bottom:14px">Pilih sub-tema, Mode Edit akan aktif otomatis (perubahan teks belum tersimpan permanen):</p>
+      <div class="topic-selector">${Object.entries(MATERIALS).map(([k,v]) => `<button class="topic-btn" onclick="showMaterial('${k}');if(!editMode)toggleEditMode()">${v.icon} ${v.title}</button>`).join('')}</div></div>`;
   }
 }
-function showQuestionsFor(topic, btn) {
-  document.querySelectorAll('.topic-selector .topic-btn').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  const qs = gameQuestions[topic] || [];
-  const listArea = document.getElementById('questionListArea');
-  if(qs.length === 0) {
-    listArea.innerHTML = '<p style="color:var(--cream-dark);font-size:13px">Belum ada soal untuk sub-tema ini.</p>';
-    return;
-  }
-  listArea.innerHTML = `
-    <div class="question-list">
-      ${qs.map((q,i) => `
-        <div class="question-item">
-          <div class="q-text">
-            <strong>${i+1}.</strong> ${q.q}<br>
-            <span class="spice-indicator spice-${q.spice}" style="margin-top:4px">${SPICE_LEVELS[q.spice].label} • +${SPICE_LEVELS[q.spice].points} poin</span>
-            <small style="color:var(--wasabi);margin-left:8px">Jawaban: ${q.options[q.answer]}</small>
-          </div>
-          <div class="q-actions">
-            <button class="btn-danger" onclick="deleteQuestion('${topic}',${i})"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+function showWordsFor(k, btn) {
+  document.querySelectorAll('#adminContent .topic-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('wordEditArea').innerHTML = `<textarea id="wordText" style="width:100%;min-height:110px">${WORDSEARCH_DATA[k].words.join(', ')}</textarea>
+    <button class="btn-primary" style="margin-top:10px" onclick="saveWords('${k}')"><i class="fas fa-save"></i> Simpan Kata</button>`;
 }
-function addQuestion() {
-  const topic = document.getElementById('newQTopic').value;
-  const spice = document.getElementById('newQSpice').value;
-  const text = document.getElementById('newQText').value.trim();
-  const a = document.getElementById('newQA').value.trim();
-  const b = document.getElementById('newQB').value.trim();
-  const c = document.getElementById('newQC').value.trim();
-  const d = document.getElementById('newQD').value.trim();
-  const answer = parseInt(document.getElementById('newQAnswer').value);
-  if(!text || !a || !b || !c || !d) {
-    notify('Semua field harus diisi!', true);
-    return;
-  }
-  if(!gameQuestions[topic]) gameQuestions[topic] = [];
-  gameQuestions[topic].push({q:text, options:[a,b,c,d], answer, spice});
-  saveQuestions();
-  document.getElementById('newQText').value = '';
-  document.getElementById('newQA').value = '';
-  document.getElementById('newQB').value = '';
-  document.getElementById('newQC').value = '';
-  document.getElementById('newQD').value = '';
-  notify('✅ Soal berhasil ditambahkan!');
-}
-function deleteQuestion(topic, idx) {
-  if(confirm('Yakin ingin menghapus soal ini?')) {
-    gameQuestions[topic].splice(idx, 1);
-    saveQuestions();
-    showQuestionsFor(topic);
-    notify('Soal berhasil dihapus');
-  }
+function saveWords(k) {
+  const ws = [...new Set(document.getElementById('wordText').value.toUpperCase().split(/[\s,]+/).filter(Boolean))];
+  const bad = ws.filter(w => !/^[A-Z]{2,10}$/.test(w));
+  if (bad.length) { notify('Tidak valid: ' + bad.join(', '), true); return; }
+  if (ws.length < 3 || ws.length > 10) { notify('Isi 3–10 kata', true); return; }
+  WORDSEARCH_DATA[k].words = ws;
+  try { const o = {}; for (const x in WORDSEARCH_DATA) o[x] = WORDSEARCH_DATA[x].words; localStorage.setItem('was4bi_words', JSON.stringify(o)); } catch(e) {}
+  notify('✅ Kata disimpan');
 }
 // ==================== UTILITIES ====================
+function updateThemeBtn() { const b = document.getElementById('themeBtn'); if (!b) return; const l = document.documentElement.getAttribute('data-theme') === 'light'; b.innerHTML = l ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>'; b.title = l ? 'Ganti ke mode malam' : 'Ganti ke mode siang'; }
+function toggleTheme() {
+  const l = document.documentElement.getAttribute('data-theme') === 'light';
+  if (l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'light');
+  try { localStorage.setItem('was4bi_theme', l ? 'dark' : 'light'); } catch(e) {}
+  updateThemeBtn();
+}
 function notify(msg, isError = false) {
   const n = document.getElementById('notification');
   n.textContent = msg;
   n.classList.toggle('error', isError);
   n.classList.add('show');
-  setTimeout(() => n.classList.remove('show'), 3000);
+  clearTimeout(notify.t); notify.t = setTimeout(() => n.classList.remove('show'), 3000);
 }
 document.getElementById('quizModal').addEventListener('click', function(e) {
   if(e.target === this) this.classList.remove('show');
@@ -1976,6 +1792,7 @@ document.addEventListener('touchmove', e => { if (!wsSelecting) return; const c 
 document.addEventListener('touchend', () => { if (wsSelecting) wsEndSelect(); });
 ['loginUser','loginPass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }));
 // ==================== INIT ====================
+updateThemeBtn();
 if (!checkStudentView()) {
   // Normal teacher flow
 }
